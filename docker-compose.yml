@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+  api-gateway:
+    build:
+      context: ./apiGateway
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - user-service
+      - reservation-service
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    ports:
+      - "50051:50051"
+
+  reservation-service:
+    build:
+      context: ./reservation-service
+      dockerfile: Dockerfile
+    ports:
+      - "50052:50052"
+
+networks:
+  default:
+    driver: bridge
