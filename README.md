@@ -30,9 +30,9 @@ Ce projet est une application de réservation d'hôtel construite en **architect
 - Apollo Server (GraphQL)
 - gRPC & Protocol Buffers
 - Docker & Docker Compose
-- Kafka (prévu via dossier `kafka/`)
+
 
 ---
 
-## 🧭 Structure du projet
+
 
