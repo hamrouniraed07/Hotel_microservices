@@ -1,6 +1,7 @@
 const grpc = require('@grpc/grpc-js');
-const protoLoader = require('@grpc/proto-loader');
+const protoLoader = require('@proto-loader');
 const { v4: uuidv4 } = require('uuid');
+const { connect, sendReservationEvent } = require('./producer'); // ✅ Ajout Kafka
 
 const reservations = []; // base en mémoire
 
@@ -14,8 +15,11 @@ const reservationProtoDefinition = protoLoader.loadSync(reservationProtoPath, {
 });
 const reservationProto = grpc.loadPackageDefinition(reservationProtoDefinition).reservation;
 
+// ✅ Connexion Kafka au démarrage
+connect();
+
 const reservationService = {
-  CreateReservation: (call, callback) => {
+  CreateReservation: async (call, callback) => {
     const { user_id, room_number, start_date, end_date } = call.request;
 
     const reservation = {
@@ -27,7 +31,13 @@ const reservationService = {
     };
 
     reservations.push(reservation);
-    console.log("Réservation créée :", reservation);
+    console.log(" Réservation créée :", reservation);
+
+    // ✅ Envoi de l'événement à Kafka
+    await sendReservationEvent({
+      type: 'CREATED',
+      reservation
+    });
 
     callback(null, reservation);
   },
@@ -65,7 +75,7 @@ const reservationService = {
     }
 
     reservations.splice(index, 1);
-    console.log(`Réservation ${reservation_id} supprimée`);
+    console.log(` Réservation ${reservation_id} supprimée`);
 
     callback(null, { message: 'Réservation annulée avec succès' });
   }
@@ -80,5 +90,5 @@ server.bindAsync(`0.0.0.0:${port}`, grpc.ServerCredentials.createInsecure(), (er
     console.error('Erreur de démarrage du service de réservation :', err);
     return;
   }
-  console.log(` Reservation microservice lancé sur le port ${port}`);
+  console.log(`Reservation microservice lancé sur le port ${port}`);
 });

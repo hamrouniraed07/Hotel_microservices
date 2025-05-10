@@ -9,8 +9,6 @@ const userPackageDef = protoLoader.loadSync('./protos/user.proto', {
   defaults: true,
   oneofs: true,
 });
-const userProto = grpc.loadPackageDefinition(userPackageDef).user;
-
 const reservationPackageDef = protoLoader.loadSync('./protos/reservation.proto', {
   keepCase: true,
   longs: String,
@@ -18,11 +16,22 @@ const reservationPackageDef = protoLoader.loadSync('./protos/reservation.proto',
   defaults: true,
   oneofs: true,
 });
-const reservationProto = grpc.loadPackageDefinition(reservationPackageDef).reservation;
+const roomPackageDef = protoLoader.loadSync('./protos/room.proto', { 
+  keepCase: true,
+  longs: String,
+  enums: String,
+  defaults: true,
+  oneofs: true,
+});
 
-// Créer les clients gRPC
+const userProto = grpc.loadPackageDefinition(userPackageDef).user;
+const reservationProto = grpc.loadPackageDefinition(reservationPackageDef).reservation;
+const roomProto = grpc.loadPackageDefinition(roomPackageDef).room; 
+
+// Clients gRPC
 const userClient = new userProto.UserService('user-service:50051', grpc.credentials.createInsecure());
 const reservationClient = new reservationProto.ReservationService('reservation-service:50052', grpc.credentials.createInsecure());
+const roomClient = new roomProto.RoomService('room-service:50053', grpc.credentials.createInsecure()); 
 
 const resolvers = {
   Query: {
@@ -49,6 +58,24 @@ const resolvers = {
         reservationClient.GetReservationsByUser({ user_id }, (err, response) => {
           if (err) reject(err);
           else resolve(response.reservations);
+        });
+      });
+    },
+
+    getRoomByNumber: (_, { room_number }) => {
+      return new Promise((resolve, reject) => {
+        roomClient.GetRoomByNumber({ room_number }, (err, response) => {
+          if (err) reject(err);
+          else resolve(response);
+        });
+      });
+    },
+
+    listRooms: () => {
+      return new Promise((resolve, reject) => {
+        roomClient.ListRooms({}, (err, response) => {
+          if (err) reject(err);
+          else resolve(response.rooms);
         });
       });
     }
@@ -105,6 +132,15 @@ const resolvers = {
         reservationClient.CancelReservation({ reservation_id }, (err, response) => {
           if (err) reject(err);
           else resolve(response.message);
+        });
+      });
+    },
+
+    createRoom: (_, { room_number, type, price }) => {
+      return new Promise((resolve, reject) => {
+        roomClient.CreateRoom({ room_number, type, price }, (err, response) => {
+          if (err) reject(err);
+          else resolve(response);
         });
       });
     }

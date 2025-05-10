@@ -15,10 +15,18 @@ const typeDefs = `#graphql
     end_date: String!
   }
 
+  type Room {
+    room_number: Int!
+    type: String!
+    price: Float!
+  }
+
   type Query {
     getUserById(user_id: String!): User
     getReservationById(reservation_id: String!): Reservation
     reservationsByUser(user_id: String!): [Reservation]
+    getRoomByNumber(room_number: Int!): Room
+    listRooms: [Room]
   }
 
   type Mutation {
@@ -29,6 +37,8 @@ const typeDefs = `#graphql
 
     createReservation(user_id: String!, room_number: Int!, start_date: String!, end_date: String!): Reservation
     cancelReservation(reservation_id: String!): String
+
+    createRoom(room_number: Int!, type: String!, price: Float!): Room
   }
 `;
 

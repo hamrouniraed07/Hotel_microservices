@@ -1,6 +1,7 @@
 const grpc = require('@grpc/grpc-js');
 const protoLoader = require('@grpc/proto-loader');
 const { v4: uuidv4 } = require('uuid');
+const sendWelcomeMessage = require('./kafka/producer');
 
 const users = []; // base en mémoire
 
@@ -33,25 +34,31 @@ const userService = {
       email: user.email,
     });
   },
-
-  loginUser: (call, callback) => {
+  loginUser: async (call, callback) => {
     const { email, password } = call.request;
-
     const user = users.find(u => u.email === email && u.password === password);
-
+  
     if (!user) {
       return callback({
         code: grpc.status.NOT_FOUND,
         message: 'Email ou mot de passe incorrect',
       });
     }
-
+  
+    // Envoyer un message Kafka
+    try {
+      await sendWelcomeMessage(user);
+    } catch (err) {
+      console.error('Erreur d\'envoi Kafka :', err.message);
+    }
+  
     callback(null, {
       user_id: user.user_id,
       name: user.name,
       email: user.email,
     });
   },
+  
 
   getUserById: (call, callback) => {
     const { user_id } = call.request;
@@ -121,5 +128,5 @@ server.bindAsync(`0.0.0.0:${port}`, grpc.ServerCredentials.createInsecure(), (er
     console.error('Erreur de démarrage :', err);
     return;
   }
-  console.log(`✅ User microservice lancé sur le port ${port}`);
+  console.log(`User microservice lancé sur le port ${port}`);
 });
