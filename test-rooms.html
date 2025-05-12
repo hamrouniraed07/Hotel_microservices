@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Room API Tester</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f2f2f2;
+      padding: 40px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 20px;
+      background: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    .response {
+      margin-top: 30px;
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      font-family: monospace;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Test Room API</h1>
+
+    <h2>➕ Add Room</h2>
+    <label>Room Number</label>
+    <input id="room_number" type="number">
+
+    <label>Type</label>
+    <input id="type" type="text">
+
+    <label>Price</label>
+    <input id="price" type="number">
+
+    <button onclick="addRoom()">Create Room</button>
+
+    <h2>📋 List All Rooms</h2>
+    <button onclick="getRooms()">Get All Rooms</button>
+
+    <div class="response" id="responseBox">Response will appear here...</div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:3000';
+
+    async function addRoom() {
+      const room_number = document.getElementById('room_number').value;
+      const type = document.getElementById('type').value;
+      const price = document.getElementById('price').value;
+
+      const res = await fetch(`${API_BASE}/rooms`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ room_number: parseInt(room_number), type, price: parseFloat(price) })
+      });
+
+      const data = await res.json();
+      document.getElementById('responseBox').innerText = JSON.stringify(data, null, 2);
+    }
+
+    async function getRooms() {
+      const res = await fetch(`${API_BASE}/rooms`);
+      const data = await res.json();
+      document.getElementById('responseBox').innerText = JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>

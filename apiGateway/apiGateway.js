@@ -11,7 +11,7 @@ const resolvers = require('./resolvers');
 
 const userProtoPath = './protos/user.proto';
 const reservationProtoPath = './protos/reservation.proto';
-const roomProtoPath = './protos/room.proto'; // ✅ New line
+const roomProtoPath = './protos/room.proto'; 
 
 const app = express();
 app.use(bodyParser.json());
@@ -56,7 +56,7 @@ server.start().then(() => {
   app.use('/graphql', expressMiddleware(server));
 });
 
-// REST endpoints
+
 
 // --- User ---
 app.get('/users/:id', (req, res) => {

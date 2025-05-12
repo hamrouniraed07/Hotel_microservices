@@ -1,4 +1,3 @@
-// ✅ kafka/producer.js
 const { Kafka } = require('kafkajs');
 
 const kafka = new Kafka({

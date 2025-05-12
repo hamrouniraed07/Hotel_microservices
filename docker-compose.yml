@@ -67,3 +67,5 @@ services:
 networks:
   default:
     driver: bridge
+  my-network: # Nouveau réseau personnalisé
+    driver: bridge
