@@ -5,58 +5,42 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const grpc = require('@grpc/grpc-js');
 const protoLoader = require('@grpc/proto-loader');
+require('dotenv').config(); 
+
+const { queryLLMWithImage } = require('./llmClient'); 
 
 const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
 
 const userProtoPath = './protos/user.proto';
 const reservationProtoPath = './protos/reservation.proto';
-const roomProtoPath = './protos/room.proto'; 
+const roomProtoPath = './protos/room.proto';
 
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
 // Load proto files
-const userProtoDef = protoLoader.loadSync(userProtoPath, {
-  keepCase: true,
-  longs: String,
-  enums: String,
-  defaults: true,
-  oneofs: true,
-});
-const reservationProtoDef = protoLoader.loadSync(reservationProtoPath, {
-  keepCase: true,
-  longs: String,
-  enums: String,
-  defaults: true,
-  oneofs: true,
-});
-const roomProtoDef = protoLoader.loadSync(roomProtoPath, { 
-  keepCase: true,
-  longs: String,
-  enums: String,
-  defaults: true,
-  oneofs: true,
-});
+const userProtoDef = protoLoader.loadSync(userProtoPath, { keepCase: true, longs: String, enums: String, defaults: true, oneofs: true });
+const reservationProtoDef = protoLoader.loadSync(reservationProtoPath, { keepCase: true, longs: String, enums: String, defaults: true, oneofs: true });
+const roomProtoDef = protoLoader.loadSync(roomProtoPath, { keepCase: true, longs: String, enums: String, defaults: true, oneofs: true });
 
 const userProto = grpc.loadPackageDefinition(userProtoDef).user;
 const reservationProto = grpc.loadPackageDefinition(reservationProtoDef).reservation;
-const roomProto = grpc.loadPackageDefinition(roomProtoDef).room; 
+const roomProto = grpc.loadPackageDefinition(roomProtoDef).room;
 
 // gRPC Clients
 const clientUsers = new userProto.UserService('user-service:50051', grpc.credentials.createInsecure());
 const clientReservations = new reservationProto.ReservationService('reservation-service:50052', grpc.credentials.createInsecure());
-const clientRooms = new roomProto.RoomService('room-service:50053', grpc.credentials.createInsecure()); 
+const clientRooms = new roomProto.RoomService('room-service:50053', grpc.credentials.createInsecure());
 
 // Apollo GraphQL
 const server = new ApolloServer({ typeDefs, resolvers });
-
 server.start().then(() => {
   app.use('/graphql', expressMiddleware(server));
 });
 
-
+// ===== REST ROUTES =====
 
 // --- User ---
 app.get('/users/:id', (req, res) => {
@@ -112,7 +96,7 @@ app.delete('/reservations/:id', (req, res) => {
   });
 });
 
-// --- Room 
+// --- Room ---
 app.post('/rooms', (req, res) => {
   const { room_number, type, price } = req.body;
   clientRooms.CreateRoom({ room_number, type, price }, (err, response) => {
@@ -135,7 +119,14 @@ app.get('/rooms', (req, res) => {
   });
 });
 
+// --- LLM Endpoint ---
+app.post('/llm-image', async (req, res) => {
+  const { prompt, imageUrl } = req.body;
+  const response = await queryLLMWithImage(prompt, imageUrl);
+  res.json({ output: response });
+});
+
 const port = 3000;
 app.listen(port, () => {
-  console.log(` API Gateway running on port ${port}`);
+  console.log(`API Gateway running on port ${port}`);
 });
