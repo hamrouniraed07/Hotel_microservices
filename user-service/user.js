@@ -3,7 +3,7 @@ const protoLoader = require('@grpc/proto-loader');
 const { v4: uuidv4 } = require('uuid');
 const sendWelcomeMessage = require('./kafka/producer');
 
-const users = []; // base en mémoire
+const users = []; 
 
 const userProtoPath = 'user.proto';
 const userProtoDefinition = protoLoader.loadSync(userProtoPath, {

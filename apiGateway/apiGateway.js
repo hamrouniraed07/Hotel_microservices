@@ -20,7 +20,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-// Load proto files
+
 const userProtoDef = protoLoader.loadSync(userProtoPath, { keepCase: true, longs: String, enums: String, defaults: true, oneofs: true });
 const reservationProtoDef = protoLoader.loadSync(reservationProtoPath, { keepCase: true, longs: String, enums: String, defaults: true, oneofs: true });
 const roomProtoDef = protoLoader.loadSync(roomProtoPath, { keepCase: true, longs: String, enums: String, defaults: true, oneofs: true });
@@ -34,15 +34,13 @@ const clientUsers = new userProto.UserService('user-service:50051', grpc.credent
 const clientReservations = new reservationProto.ReservationService('reservation-service:50052', grpc.credentials.createInsecure());
 const clientRooms = new roomProto.RoomService('room-service:50053', grpc.credentials.createInsecure());
 
-// Apollo GraphQL
+
 const server = new ApolloServer({ typeDefs, resolvers });
 server.start().then(() => {
   app.use('/graphql', expressMiddleware(server));
 });
 
-// ===== REST ROUTES =====
 
-// --- User ---
 app.get('/users/:id', (req, res) => {
   clientUsers.GetUserById({ user_id: req.params.id }, (err, response) => {
     if (err) return res.status(500).send(err);
@@ -66,7 +64,7 @@ app.post('/users/login', (req, res) => {
   });
 });
 
-// --- Reservation ---
+
 app.post('/reservations', (req, res) => {
   const { user_id, room_number, start_date, end_date } = req.body;
   clientReservations.CreateReservation({ user_id, room_number, start_date, end_date }, (err, response) => {
@@ -96,7 +94,6 @@ app.delete('/reservations/:id', (req, res) => {
   });
 });
 
-// --- Room ---
 app.post('/rooms', (req, res) => {
   const { room_number, type, price } = req.body;
   clientRooms.CreateRoom({ room_number, type, price }, (err, response) => {

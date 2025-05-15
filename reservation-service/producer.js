@@ -2,7 +2,7 @@ const { Kafka } = require('kafkajs');
 
 const kafka = new Kafka({
   clientId: 'reservation-service',
-  brokers: ['kafka:9092'] // Correspond au nom du service Docker de Kafka
+  brokers: ['kafka:9092'] 
 });
 
 const producer = kafka.producer();
@@ -17,7 +17,6 @@ const connect = async () => {
   }
 };
 
-// Envoyer un événement Kafka
 const sendReservationEvent = async (event) => {
   try {
     await producer.send({

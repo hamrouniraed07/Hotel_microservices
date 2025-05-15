@@ -9,7 +9,7 @@ async function queryLLMWithImage(textPrompt, imageUrl) {
     const response = await axios.post(
       "https://openrouter.ai/api/v1/chat/completions",
       {
-        model: "meta-llama/llama-4-maverick:free",
+        "model": "deepseek/deepseek-prover-v2:free",
         max_tokens: 1000, // Limite raisonnable de réponse
         messages: [
           {
